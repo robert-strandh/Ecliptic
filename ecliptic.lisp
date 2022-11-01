@@ -12,16 +12,13 @@
         (N3 (1+ (floor (/ (+ (- year (* 4 (floor (/ year 4)))) 2) 3)))))
     (- (+ (- N1 (* N2 N3)) day) 30)))
 
-(defun ecliptic (day month year &key (latitude 44.8058) (longitude -0.6304) (zenith :official) (localoffset 1))
-  (let* ((z (ecase zenith
-              (:official (+ 90 (/ 50 60)))
-              (:civil 96)
-              (:nautical 102)
-              (:astronomical 108)))
-         (N (day-of-year day month year))
-         (lngHour  (/ longitude 15))
-         (Tr (+ N (/ (- 6 lngHour) 24)))
-         (Ts (+ N (/ (- 18 lngHour) 24)))
+(defparameter *house-latitude* 44.81472612323331)
+(defparameter *house-longitude* -0.6425042274500825)
+
+(defun ecliptic-aux (day-of-year latitude longitude zenith localoffset)
+  (let* ((lngHour  (/ longitude 15))
+         (Tr (+ day-of-year (/ (- 6 lngHour) 24)))
+         (Ts (+ day-of-year (/ (- 18 lngHour) 24)))
          (Mr (- (* 0.9856 Tr) 3.289))
          (Ms (- (* 0.9856 Ts) 3.289))
          (Lr (+ Mr
@@ -58,9 +55,9 @@
          (sinDecs (* 0.39782 (sind Ls)))
          (cosDecr (cos (asin sinDecr)))
          (cosDecs (cos (asin sinDecs)))
-         (cosHr (/ (- (cosd z) (* sinDecr (sind latitude)))
+         (cosHr (/ (- (cosd zenith) (* sinDecr (sind latitude)))
                    (* cosDecR (cosd latitude))))
-         (cosHs (/ (- (cosd z) (* sinDecs (sind latitude)))
+         (cosHs (/ (- (cosd zenith) (* sinDecs (sind latitude)))
                    (* cosDecs (cosd latitude))))
          
          (Hr (/ (- 360 (/ (* (acos coshr) 180) pi)) 15))
@@ -83,3 +80,13 @@
             (multiple-value-bind (hours fraction)
                 (floor localTs)
               (list hours (round (* fraction 60)))))))
+
+
+(defun ecliptic (day month year &key (latitude *house-latitude*) (longitude *house-longitude*) (zenith :official) (localoffset 1))
+  (let ((z (ecase zenith
+             (:official (+ 90 (/ 50 60)))
+             (:civil 96)
+             (:nautical 102)
+             (:astronomical 108))))
+    (ecliptic-aux (day-of-year day month year) latitude longitude z localoffset)))
+         
