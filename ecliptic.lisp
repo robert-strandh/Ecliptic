@@ -1,5 +1,12 @@
 (cl:in-package #:ecliptic)
 
+;;;; I apologize for the choice of variable names.  I wrote this code
+;;;; as a direct translation of a formula I found on the Internet, and
+;;;; that formula had these names in it, without any further
+;;;; explanation.  I may try to improve on these choices if I find a
+;;;; formula with better variable names.
+
+
 (defun sind (angle)
   (sin (/ (* angle pi) 180)))
 
